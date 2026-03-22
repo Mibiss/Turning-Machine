@@ -3,7 +3,7 @@
 Astar Island — Prior Calibration Tool
 ======================================
 Pulls ground truth analysis data from completed rounds, compares it against
-the current terrain priors, and outputs tuned prior values to drop into main2.py.
+the current terrain priors, and outputs tuned prior values to drop into main.py.
 
 Usage:
     export ASTAR_TOKEN=<your_jwt_token>
@@ -15,7 +15,7 @@ Usage:
     # Load previously saved data (no API calls):
     python3 calibrate.py --load-data ./calibration_data
 
-    # Output just the replacement code block for main2.py:
+    # Output just the replacement code block for main.py:
     python3 calibrate.py --emit-priors
 """
 
@@ -333,7 +333,7 @@ def calibrate_spatial(records: list, save_path: str = None) -> dict:
 
 # ─── Reporting ────────────────────────────────────────────────────────────────
 
-# Current hand-crafted priors from main2.py (for comparison)
+# Current hand-crafted priors from main.py (for comparison)
 CURRENT_PRIORS = {
     FOREST: {
         "label": "forest",
@@ -400,9 +400,9 @@ def print_report(calibrated: dict, cell_count: dict):
 
 
 def emit_priors_code(calibrated: dict):
-    """Print replacement prior code to paste into main2.py's _terrain_prior method."""
+    """Print replacement prior code to paste into main.py's _terrain_prior method."""
     print("\n" + "=" * 70)
-    print("REPLACEMENT PRIOR CODE — paste into _terrain_prior() in main2.py")
+    print("REPLACEMENT PRIOR CODE — paste into _terrain_prior() in main.py")
     print("=" * 70)
     print()
 
@@ -441,7 +441,7 @@ def main():
     parser.add_argument("--token",       default=os.environ.get("ASTAR_TOKEN", ""), help="JWT token")
     parser.add_argument("--save-data",   metavar="DIR", help="Save raw analysis data to DIR")
     parser.add_argument("--load-data",   metavar="DIR", help="Load saved analysis data from DIR")
-    parser.add_argument("--emit-priors", action="store_true", help="Output replacement prior code for main2.py")
+    parser.add_argument("--emit-priors", action="store_true", help="Output replacement prior code for main.py")
     args = parser.parse_args()
 
     if args.load_data:
@@ -474,7 +474,7 @@ def main():
     if args.emit_priors:
         emit_priors_code(calibrated)
     else:
-        print("Tip: run with --emit-priors to get replacement code for main2.py")
+        print("Tip: run with --emit-priors to get replacement code for main.py")
 
 
 if __name__ == "__main__":

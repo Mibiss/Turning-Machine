@@ -6,4 +6,4 @@ __pycache__/
 .auto_round_state.json
 .auto_calibrate_state.json
 *.plist
-code/obs/
+obs/

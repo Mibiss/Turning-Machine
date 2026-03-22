@@ -1,4 +1,4 @@
-path: /Users/AD08664/workspace/ainm/norgesgruppen-data/datasets/grocery_classify_full
+path: ./datasets/grocery_classify_full
 train: train/images
 val: train/images
 

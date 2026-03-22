@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /Users/AD08664/workspace/ainm/tripletex-agent
+cd "$(dirname "$0")"
 
 # Archive logs before rebuilding
 SCORES="${1:-}"

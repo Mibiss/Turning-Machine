@@ -105,7 +105,7 @@ def apply_floor_and_normalize(pred):
     return pred / pred.sum(axis=-1, keepdims=True)
 
 
-# ─── Static Baseline (current main2.py approach) ────────────────────────────
+# ─── Static Baseline (current main.py approach) ────────────────────────────
 
 def _compute_settlement_distance(ig):
     H, W = ig.shape
@@ -136,7 +136,7 @@ def _compute_coast_mask(ig, radius=2):
 
 
 def build_static_spatial_prior(ig, spatial_priors_path=None):
-    """Build the same static spatial prior that main2.py uses."""
+    """Build the same static spatial prior that main.py uses."""
     if spatial_priors_path is None:
         spatial_priors_path = os.path.join(
             os.path.dirname(__file__), "calibration_data", "spatial_priors.json"
@@ -185,7 +185,7 @@ def build_static_spatial_prior(ig, spatial_priors_path=None):
 # ─── Validation Methods ─────────────────────────────────────────────────────
 
 def validate_static_baseline(records):
-    """Leave-one-round-out with static spatial priors (current main2.py approach)."""
+    """Leave-one-round-out with static spatial priors (current main.py approach)."""
     round_numbers = sorted(set(r["round_number"] for r in records))
     all_kls = []
     per_round = {}
