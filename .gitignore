@@ -1,0 +1,16 @@
+# Large data files
+*.zip
+
+# Model weights and training runs
+norgesgruppen-data/runs/
+norgesgruppen-data/submission/weights/
+norgesgruppen-data/submission_v2/weights/
+*.pt
+*.onnx
+
+# Dataset images and labels (too large for git)
+norgesgruppen-data/data/
+norgesgruppen-data/datasets/
+
+# OS files
+.DS_Store
