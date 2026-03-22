@@ -1,0 +1,198 @@
+================================================================================
+NM i AI 2026 - NorgesGruppen Data Task: Findings & Notes
+================================================================================
+Date: 2026-03-19
+Competition: March 19-22, 2026 (69 hours)
+URL: https://app.ainm.no
+Docs: https://app.ainm.no/docs/norgesgruppen-data/overview
+================================================================================
+
+TASK SUMMARY
+============
+- Detect and classify grocery products on store shelves (object detection)
+- Submit a .zip file with a run.py script + model weights
+- Runs in a sandboxed Docker container with GPU (NVIDIA L4, 24GB VRAM)
+- No network access in sandbox
+- Scoring: 70% detection mAP (IoU >= 0.5) + 30% classification mAP
+
+TRAINING DATA
+=============
+- COCO Dataset (~864 MB): 248 shelf images from Norwegian grocery stores
+- ~22,700 bounding box annotations in COCO format
+- 356 product categories (IDs 0-355)
+- 4 store sections: Egg, Frokost, Knekkebrod, Varmedrikker
+- Product Reference Images (~60 MB): 327 products with multi-angle photos
+  - Organized by barcode: {product_code}/main.jpg
+  - Includes metadata.json with product names and counts
+
+ANNOTATION FORMAT (COCO)
+========================
+annotations.json structure:
+{
+  "images": [{"id": 1, "file_name": "img_00001.jpg", "width": 2000, "height": 1500}],
+  "categories": [{"id": 0, "name": "PRODUCT_NAME", "supercategory": "product"}],
+  "annotations": [{
+    "id": 1,
+    "image_id": 1,
+    "category_id": 42,
+    "bbox": [x, y, width, height],  // pixels, COCO format
+    "area": 25688,
+    "iscrowd": 0,
+    "product_code": "8445291513365",
+    "product_name": "NESCAFE VANILLA LATTE 136G NESTLE",
+    "corrected": true
+  }]
+}
+
+SUBMISSION FORMAT
+=================
+Zip Structure:
+- run.py MUST be at root of zip (most common error: nested in subfolder)
+- Include model weights and Python helper files
+- Max 420 MB total for weights
+- Max 300 second timeout per submission
+
+Execution:
+  python run.py --input /data/images/ --output /output/predictions.json
+
+Input: /data/images/ contains JPEG files named img_XXXXX.jpg
+
+Output JSON format:
+[
+  {
+    "image_id": "img_00042.jpg",
+    "predictions": [
+      {"x": 100, "y": 50, "width": 75, "height": 120, "category_id": 42, "confidence": 0.95}
+    ]
+  }
+]
+
+SANDBOX ENVIRONMENT
+===================
+GPU: NVIDIA L4 (24GB VRAM) - always available
+  torch.cuda.is_available() returns True
+  ONNX: Use ["CUDAExecutionProvider", "CPUExecutionProvider"]
+
+Pre-installed Packages:
+- PyTorch 2.6.0+cu124, torchvision 0.21.0+cu124
+- ultralytics 8.1.0, onnxruntime-gpu 1.20.0
+- opencv-python-headless 4.9.0.80
+- albumentations 1.3.1, Pillow 10.2.0
+- numpy 1.26.4, scipy 1.12.0, scikit-learn 1.4.0
+- pycocotools 2.0.7, ensemble-boxes 1.0.9
+- timm 0.9.12, supervision 0.18.0, safetensors 0.4.2
+
+No runtime pip install allowed!
+
+SCORING
+=======
+- 70% Detection mAP: Bounding box IoU >= 0.5 (category_id ignored)
+- 30% Classification mAP: IoU >= 0.5 AND correct category_id
+- Detection-only submissions (all category_id: 0) score up to 70% max
+- Multiple submissions allowed; resets daily at UTC midnight
+- Best-scoring submission used by default; can override via "Select for final"
+
+SECURITY RESTRICTIONS
+=====================
+Blocked imports: os, sys, subprocess, socket, pickle, requests, urllib,
+                 multiprocessing, threading, yaml
+Blocked calls: eval(), exec(), compile(), __import__(), getattr with dangerous names
+Blocked: ELF/Mach-O/PE binaries, symlinks, path traversal
+Use pathlib for file operations; json instead of yaml for configs.
+
+EXAMPLE: YOLOv8 BASELINE
+=========================
+Train locally:
+  yolo detect train data=coco.yaml model=yolov8n.pt epochs=50 nc=357
+
+run.py example:
+  import torch
+  from ultralytics import YOLO
+  model = YOLO('weights/best.pt')
+  if torch.cuda.is_available():
+      model.to('cuda')
+  results = model.predict(source='/data/images/', conf=0.5)
+
+DATA ANALYSIS (from our inspection)
+====================================
+
+--- Images ---
+- 248 images total, highly varied resolutions
+- Most common: 4032x3024 (59 imgs), 4000x3000 (17 imgs), 3024x4032 (26 imgs)
+- Smallest: 481x640, Largest: 5712x4284
+- Resolutions are NOT uniform — need resizing/padding during training
+- Mix of portrait and landscape orientations
+
+--- Annotations ---
+- 22,731 total annotations across 248 images
+- Per image: min 14, max 235, mean 91.7, median 84
+  (dense scenes — lots of products per shelf image!)
+- All 356 categories are used (no empty categories)
+- iscrowd=0 for all (no crowd annotations)
+- NOTE: actual data does NOT have product_code/corrected fields
+  (docs example showed these, but the real annotations are simpler)
+
+--- Category Distribution (HIGHLY IMBALANCED) ---
+- Top category: "unknown_product" (id=355) with 422 annotations (1.9%)
+  * This is a catch-all for unrecognized products
+- Top real products: WASA knekkebrød varieties dominate (300-400 each)
+- Bottom: 41 categories have only 1 annotation!
+- Distribution buckets:
+    1 annotation:    41 categories (long tail!)
+    2-5 annotations: 43 categories
+    6-10:            31 categories
+    11-50:           102 categories
+    51-100:          48 categories
+    100+:            91 categories
+- KEY INSIGHT: ~24% of categories have <=5 examples — few-shot problem
+
+--- Bounding Box Sizes ---
+- Width:  min 10px, max 1003px, mean 185px
+- Height: min 11px, max 1016px, mean 190px
+- Area:   min 220px², max 696,082px², mean 40,888px²
+- Size distribution:
+    Small  (< 1k px²):  30 (0.1%)  — almost no tiny objects
+    Medium (1k-10k px²): 3,996 (17.6%)
+    Large  (> 10k px²):  18,705 (82.3%) — mostly large boxes
+- Products on shelves are generally well-sized for detection
+
+--- Product Reference Images ---
+- 344 product folders + 1 metadata.json at root
+- 327 products have images, 2 products have NO images:
+    * "BLUE FRUIT TE PYRAMIDE 20POS LIPTON" (81 annotations, no ref images!)
+    * "BRUSCHETTA LIGURISK 130G OLIVINO" (1 annotation, no ref images)
+- 1,599 total reference images (multi-angle: main, front, back, left, right, top, bottom)
+- Images per product: min 1, max 7, mean 4.6
+- 1 product in metadata not in COCO categories: "FRIELE FROKOST PRESSKANNE 250G"
+
+--- Category <-> Product Mapping ---
+- 323 of 356 categories match a product in metadata
+- 33 categories have NO matching product reference images
+  (includes eggs, cereals, some knekkebrød variants)
+- These 33 unmatched categories will rely solely on COCO training crops
+
+KEY STRATEGIC OBSERVATIONS
+==========================
+1. DETECTION is 70% of score — focus here first for quick wins
+2. Class imbalance is severe — augmentation critical for rare classes
+3. Product reference images could help with classification (few-shot learning)
+4. 248 training images is small — heavy augmentation needed
+5. Images are high-res — model input size matters (larger = better but slower)
+6. 300s timeout on L4 GPU — need to balance model size vs inference speed
+7. Detection-only (all category_id=0) gets max 70% — easy first submission
+8. unknown_product (id=355) is most common — handle carefully
+
+OUR APPROACH (AWS-based)
+========================
+- Plan to use AWS infrastructure for training (user's existing access)
+- Training data already downloaded and extracted
+- Train model on AWS GPU, package into zip for submission
+
+OVERALL COMPETITION
+===================
+- 3 tasks total, each worth 33% of final score:
+  1. NorgesGruppen Data - Object Detection (this task)
+  2. Tripletex - AI Accounting Agent
+  3. Astar Island - Norse World Prediction
+- Total prize pool: 1,000,000 NOK
+- Team size: max 4 members
