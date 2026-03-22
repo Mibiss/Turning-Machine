@@ -1,16 +1,42 @@
-# Large data files
-*.zip
+# IDE
+.idea/
+*.iml
 
-# Model weights and training runs
-norgesgruppen-data/runs/
-norgesgruppen-data/submission/weights/
-norgesgruppen-data/submission_v2/weights/
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+
+# Model weights and large files
 *.pt
 *.onnx
+*.zip
 
-# Dataset images and labels (too large for git)
-norgesgruppen-data/data/
-norgesgruppen-data/datasets/
+# NorgesGruppen specifics
+ainm/norgesgruppen-data/runs/
+ainm/norgesgruppen-data/data/
+ainm/norgesgruppen-data/datasets/
+ainm/norgesgruppen-data/submission/weights/
+ainm/norgesgruppen-data/submission_v2/weights/
 
-# OS files
-.DS_Store
+# Astar Island
+ainm/astar-island/code/.auto_calibrate_state.json
+ainm/astar-island/code/*.log
+ainm/astar-island/code/obs/
+ainm/astar-island/.idea/
+
+# Tripletex Agent
+ainm/tripletex-agent/build/
+ainm/tripletex-agent/logs/
+ainm/tripletex-agent/.gradle/
+ainm/tripletex-agent/.idea/
+
+# Logs
+*.log

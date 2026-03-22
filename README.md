@@ -13,7 +13,7 @@ Detect and classify **356 grocery product categories** on retail shelf images. D
 
 **Approach:** YOLOv8x with stratified multi-label splitting, 4-phase progressive training pipeline, FP16 ONNX ensemble with Weighted Boxes Fusion.
 
-`norgesgruppen-data/`
+`ainm/norgesgruppen-data/`
 
 ---
 
@@ -22,7 +22,7 @@ Predict how a Norse Viking civilization evolves across a 40x40 grid over 50 simu
 
 **Approach:** Monte Carlo forward simulation with vectorized NumPy, 300 parallel simulations under 10 seconds.
 
-`astar-island/`
+`ainm/astar-island/`
 
 ---
 
@@ -31,7 +31,7 @@ Automate 20+ accounting workflows — invoices, payments, bank reconciliation, s
 
 **Approach:** Kotlin agentic system powered by Claude Sonnet, with task-specific classifiers, REST API tool use, and multi-step reasoning loops.
 
-`tripletex-agent/`
+`ainm/tripletex-agent/`
 
 ---
 
