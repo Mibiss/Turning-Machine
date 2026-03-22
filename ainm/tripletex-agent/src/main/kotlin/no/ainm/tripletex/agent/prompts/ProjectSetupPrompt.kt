@@ -22,6 +22,8 @@ ACTIVITY: POST /activity
   POST /project/projectActivity {"project":{"id":PROJ_ID},"activity":{"id":ACT_ID}}
   This is REQUIRED — even if the activity already exists, it is NOT linked until you call this endpoint!
   If the link already exists (422), that's fine — just continue.
+- IMPORTANT: EVERY project MUST have at least one activity linked! If the prompt doesn't specify an activity name,
+  create one with the SAME NAME as the project and link it.
 
 DEPARTMENT: POST /department {"name":"Sales","departmentNumber":"100"}
 
@@ -48,15 +50,15 @@ SUPPLIER COST ON PROJECT (leverandørkostnad):
 - IMPORTANT: account "id" must be the Tripletex internal ID from lookup, NOT the account number!
 
 CUSTOMER INVOICE FROM PROJECT:
-- If the project has a budget/fixed price, the invoice total (excl. VAT) should equal the budget amount exactly.
-- Create ONE order line with: count=1, unitPriceExcludingVatCurrency=BUDGET_AMOUNT
-- Do NOT calculate hourly rates — just use the budget as the invoice amount.
+- If the prompt specifies HOURS and HOURLY RATE, use count=HOURS and unitPriceExcludingVatCurrency=HOURLY_RATE on the order line.
+  Example: "7 timer á 1650 kr" → count=7, unitPriceExcludingVatCurrency=1650
+- If the project has a budget/fixed price (no hours), use count=1 and unitPriceExcludingVatCurrency=BUDGET_AMOUNT.
 - CRITICAL: Link the order to the project! Include "project":{"id":PROJ_ID} on the POST /order call!
 ${CommonPrompts.FIND_OR_CREATE_CUSTOMER}
 Order creation for project:
 1. POST /order {"customer":{"id":CID},"project":{"id":PROJ_ID},"orderDate":"DATE","deliveryDate":"DATE"} → OID
    IMPORTANT: Include "project":{"id":PROJ_ID} to link the order/invoice to the project!
-2. POST /order/orderline {"order":{"id":OID},"description":"Project Name","count":1,"unitPriceExcludingVatCurrency":BUDGET_AMOUNT,"vatType":{"id":3}}
+2. POST /order/orderline {"order":{"id":OID},"description":"Description","count":COUNT,"unitPriceExcludingVatCurrency":UNIT_PRICE,"vatType":{"id":3}}
    ALWAYS include "vatType" on order lines
 ${CommonPrompts.VAT_TYPES_OUTGOING}
 - Create invoice from order: PUT /order/OID/:invoice?invoiceDate=DATE with body="{}"
