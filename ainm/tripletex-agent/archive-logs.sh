@@ -4,8 +4,8 @@
 #        ./archive-logs.sh   (no scores, just timestamp)
 set -euo pipefail
 
-LOG=~/Desktop/tripletex-log.txt
-ARCHIVE_DIR=~/Desktop/logs-of-tasks-runs
+LOG=logs/tripletex-log.txt
+ARCHIVE_DIR=logs/archive
 
 mkdir -p "$ARCHIVE_DIR"
 

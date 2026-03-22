@@ -5,7 +5,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 object TaskLogger {
-    private val logFile = File(System.getProperty("user.home"), "Desktop/tripletex-log.txt")
+    private val logDir = File("logs").also { it.mkdirs() }
+    private val logFile = File(logDir, "tripletex-log.txt")
     private val timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
     fun separator() {

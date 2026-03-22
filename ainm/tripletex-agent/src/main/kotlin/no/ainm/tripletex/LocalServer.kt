@@ -49,7 +49,7 @@ fun main() {
     TaskLogger.log("=== Tripletex Agent running on http://localhost:$port ===")
     TaskLogger.log("Expose with: npx cloudflared tunnel --url http://localhost:$port")
     TaskLogger.log("Then submit the HTTPS URL at https://app.ainm.no/submit/tripletex")
-    TaskLogger.log("Logging to: ~/Desktop/tripletex-log.txt")
+    TaskLogger.log("Logging to: logs/tripletex-log.txt")
 }
 
 private fun sendJson(exchange: HttpExchange, code: Int, body: String) {
