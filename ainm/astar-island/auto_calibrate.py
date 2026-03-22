@@ -6,7 +6,7 @@ Behavior:
 - Detect when new completed/scoring rounds appear in your history.
 - Re-run calibration on completed rounds.
 - Save a candidate prior file for review.
-- Optionally patch main2.py priors if enabled and minimum sample thresholds pass.
+- Optionally patch main.py priors if enabled and minimum sample thresholds pass.
 """
 
 import argparse
@@ -24,7 +24,7 @@ STATE_PATH = SCRIPT_DIR / ".auto_calibrate_state.json"
 OUTPUT_DIR = SCRIPT_DIR / "calibration_data"
 LATEST_PRIORS_PATH = OUTPUT_DIR / "calibrated_priors.latest.json"
 SPATIAL_PRIORS_PATH = OUTPUT_DIR / "spatial_priors.json"
-MAIN2_PATH = SCRIPT_DIR / "main2.py"
+MAIN_PATH = SCRIPT_DIR / "main.py"
 
 TARGET_TERRAINS = {
     "forest": cal.FOREST,
@@ -104,7 +104,7 @@ def _fmt_array(vals: List[float]) -> str:
 
 
 def _apply_to_main2(candidates: Dict[str, dict]) -> bool:
-    text = MAIN2_PATH.read_text()
+    text = MAIN_PATH.read_text()
     replacements = {
         "_PRIOR_CAL_FOREST": _fmt_array(candidates["forest"]["probs"]),
         "_PRIOR_CAL_SETTLEMENT": _fmt_array(candidates["settlement"]["probs"]),
@@ -116,17 +116,17 @@ def _apply_to_main2(candidates: Dict[str, dict]) -> bool:
         pattern = rf"({name}\s*=\s*np\.array\(\s*)\[[^\]]+\](\s*,\s*dtype=np\.float64\s*\))"
         updated, n = re.subn(pattern, rf"\1{arr}\2", updated, count=1)
         if n != 1:
-            raise RuntimeError(f"Could not update {name} in main2.py")
+            raise RuntimeError(f"Could not update {name} in main.py")
     if updated != text:
-        MAIN2_PATH.write_text(updated)
+        MAIN_PATH.write_text(updated)
         return True
     return False
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Auto-calibrate priors for main2.py")
+    parser = argparse.ArgumentParser(description="Auto-calibrate priors for main.py")
     parser.add_argument("--token", default=os.environ.get("ASTAR_TOKEN", ""), help="JWT token")
-    parser.add_argument("--apply-main2", action="store_true", help="Auto-apply candidates to main2.py")
+    parser.add_argument("--apply-main2", action="store_true", help="Auto-apply candidates to main.py")
     args = parser.parse_args()
 
     token = args.token.strip()
@@ -152,7 +152,7 @@ def main() -> int:
     candidates = _extract_candidates(calibrated, cell_count)
     _write_candidate_file(candidates, max_round)
 
-    # Spatial calibration — write spatial_priors.json for main2.py auto-loading
+    # Spatial calibration — write spatial_priors.json for main.py auto-loading
     cal.calibrate_spatial(records, save_path=str(SPATIAL_PRIORS_PATH))
 
     print(f"Saved candidate priors: {LATEST_PRIORS_PATH}")
@@ -169,11 +169,11 @@ def main() -> int:
         if _passes_thresholds(candidates, MIN_COUNTS_DEFAULT):
             updated = _apply_to_main2(candidates)
             if updated:
-                print("Applied calibrated priors to main2.py")
+                print("Applied calibrated priors to main.py")
             else:
-                print("main2.py already up-to-date with candidates")
+                print("main.py already up-to-date with candidates")
         else:
-            print("Threshold check failed; skipped main2.py update")
+            print("Threshold check failed; skipped main.py update")
 
     _save_state(max_round, updated)
     return 0

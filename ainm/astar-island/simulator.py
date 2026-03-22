@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 log = logging.getLogger("astar.simulator")
 
-# ─── Constants (mirror main2.py) ─────────────────────────────────────────────
+# ─── Constants (mirror main.py) ─────────────────────────────────────────────
 OCEAN      = 10
 PLAINS     = 11
 EMPTY      = 0

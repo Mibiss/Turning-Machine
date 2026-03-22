@@ -17,7 +17,7 @@ from collections import defaultdict
 
 log = logging.getLogger("astar.conditioned_prior")
 
-# ─── Constants (mirror main2.py) ─────────────────────────────────────────────
+# ─── Constants (mirror main.py) ─────────────────────────────────────────────
 OCEAN      = 10
 PLAINS     = 11
 EMPTY      = 0

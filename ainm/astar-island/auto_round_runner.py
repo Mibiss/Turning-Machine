@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Run main2.py automatically once per active round.
+Run main.py automatically once per active round.
 
 Designed to be called periodically (e.g. launchd StartInterval).
 """
@@ -127,10 +127,10 @@ def _run_once(token: str, now: str) -> int:
         return 0
 
     if have_saved_obs and queries_left <= 0:
-        cmd = [sys.executable, str(script_dir / "main2.py"), "--load-obs", "./obs"]
+        cmd = [sys.executable, str(script_dir / "main.py"), "--load-obs", "./obs"]
         mode = "load-obs"
     else:
-        cmd = [sys.executable, str(script_dir / "main2.py"), "--save-obs", "./obs"]
+        cmd = [sys.executable, str(script_dir / "main.py"), "--save-obs", "./obs"]
         mode = "save-obs"
 
     print(f"[{now}] Running pipeline for round {round_number} ...")
